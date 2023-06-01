@@ -10,6 +10,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/mrPichon/readinglist/internal/data"
 )
 
 const version = "1.0.0"
@@ -24,6 +25,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -35,11 +37,6 @@ func main() {
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-
-	app := &application{
-		config: cfg,
-		logger: logger,
-	}
 
 	db, err := sql.Open("postgres", cfg.dsn)
 	if err != nil {
@@ -55,6 +52,12 @@ func main() {
 	}
 
 	logger.Printf("database connection pool established")
+
+	app := &application{
+		config: cfg,
+		logger: logger,
+		models: data.NewModels(db),
+	}
 
 	addr := fmt.Sprintf(":%d", cfg.port)
 	srv := http.Server{

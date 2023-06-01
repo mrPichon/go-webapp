@@ -25,10 +25,10 @@ type BookModel struct {
 
 func (b BookModel) Insert(book *Book) error {
 	query := `
-	INSERT INTO books(title, published, pages, genres, rating)
-	VALUES ($1, $2, $3, $4, $5)
-	RETURNING id, created_at, version`
-	args := []interface{}{book.Title, book.Pages, pq.Array(book.Genres), book.Rating}
+		INSERT INTO books (title, published, pages, genres, rating)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, created_at, version`
+	args := []interface{}{book.Title, book.Published, book.Pages, pq.Array(book.Genres), book.Rating}
 	// return the auto generated system values to Go object
 	return b.DB.QueryRow(query, args...).Scan(&book.ID, &book.CreateAt, &book.Version)
 }
@@ -38,11 +38,11 @@ func (b BookModel) Get(id int64) (*Book, error) {
 		return nil, errors.New("record not found")
 	}
 	query := `
-	SELCT id, created_at, title, pages, genres, rating, version
+	SELECT id, created_at, title, pages, published, genres, rating, version
 	FROM books
 	WHERE id = $1`
 
-	var book Book
+	var book = Book{}
 
 	err := b.DB.QueryRow(query, id).Scan(
 		&book.ID,
